@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Учет Затрат{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-header {
+            background-color: #343a40; /* Темно-серый цвет для шапки */
+            padding: 0.5em 1em; /* Уменьшим немного паддинг */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .main-nav {
+            display: flex;
+            justify-content: space-between; /* Лого/название слева, меню справа */
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto; /* Центрирование содержимого навигации */
+        }
+        
+        .nav-logo a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links li a {
+            color: #f8f9fa; /* Светлый цвет для ссылок */
+            text-decoration: none;
+            font-weight: normal; /* Обычный вес шрифта */
+            padding: 0.8em 1em; /* Увеличим паддинг для удобства нажатия */
+            border-radius: 4px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            display: block; /* Чтобы паддинг работал корректно */
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            background-color: #495057; /* Более темный фон при наведении/активности */
+            color: white;
+        }
+        .nav-links li:not(:last-child) {
+            margin-right: 10px; /* Отступ между пунктами меню */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2em auto;
+            padding: 1.5em; /* Немного увеличим внутренний отступ */
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.07); /* Более мягкая тень */
+            flex-grow: 1;
+        }
+
+        h1, h2 {
+            color: #495057; /* Более мягкий цвет для заголовков */
+            text-align: center;
+            margin-bottom: 1.2em;
+        }
+        
+        table {
+            width: 100%;
+            margin: 1.5em auto;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1em;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6; /* Светлее разделитель */
+        }
+
+        th {
+            background-color: #e9ecef; /* Светлый фон для заголовков таблицы */
+            font-weight: 600; /* Полужирный */
+            color: #495057;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #f8f9fa; /* Легкое подсвечивание строки при наведении */
+        }
+
+        .form-container {
+            width: 90%;
+            max-width: 550px;
+            margin: 2em auto;
+            background-color: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.07);
+        }
+        .form-container div {
+            margin-bottom: 1.2em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.6em;
+            font-weight: 600;
+            color: #495057;
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 0.8em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        button[type="submit"], .button-general {
+            background-color: #007bff; /* Синий цвет для кнопок */
+            color: white;
+            border: none;
+            padding: 0.8em 1.5em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        button[type="submit"]:hover, .button-general:hover {
+            background-color: #0056b3; /* Темнее при наведении */
+        }
+        .button-danger {
+             background-color: #dc3545; /* Красный для опасных действий */
+        }
+        .button-danger:hover {
+            background-color: #c82333;
+        }
+
+        .error-message {
+            color: #dc3545; /* Красный цвет для ошибок */
+            background-color: #f8d7da; /* Светло-красный фон */
+            border: 1px solid #f5c6cb; /* Красная рамка */
+            padding: 0.8em;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mt-2 {
+            margin-top: 2em;
+        }
+        .mb-2 {
+            margin-bottom: 2em;
+        }
+
+        /* Адаптивность */
+        @media screen and (max-width: 768px) {
+            .main-nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 10px;
+            }
+            .nav-links li {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+            .nav-links li a {
+                text-align: left;
+            }
+            .form-container {
+                width: 95%;
+                padding: 1.5em;
+            }
+        }
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <header class="main-header">
+        <div class="main-nav">
+            <div class="nav-logo">
+                <a href="{{ url_for('index') }}">Учет Затрат</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Затраты</a></li>
+                <li><a href="{{ url_for('manage_categories_page') }}" class="{{ 'active' if request.endpoint == 'manage_categories_page' else '' }}">Категории</a></li>
+                {% if session.get('user_name') == 'admin' %}
+                <li><a href="{{ url_for('manage_users') }}" class="{{ 'active' if request.endpoint == 'manage_users' else '' }}">Пользователи</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('logout') }}">Выйти</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

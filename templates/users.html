@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Управление пользователями</h1>
+
+    {% if session.get('user_name') == 'admin' %}
+    <div class="form-container">
+        <h2>Добавить пользователя</h2>
+        <form method="POST" action="{{ url_for('manage_users') }}">
+            <div>
+                <label for="name">Имя:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div>
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required minlength="6">
+            </div>
+            <button type="submit" class="button-general">Добавить пользователя</button>
+        </form>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+        {% if success_message %}
+             <p style="color: green; background-color: #e6ffed; border: 1px solid #c3e6cb; padding: 0.8em; border-radius: 4px; text-align: center; margin-top: 1em;">
+                {{ success_message }}
+            </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="table-container mt-2">
+        <h2>Список пользователей</h2>
+        {% if users %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center">Пользователей пока нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

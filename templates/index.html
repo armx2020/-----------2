@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Список затрат{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Список затрат</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category in ['success', 'error', 'info', 'warning'] else 'info' }}" role="alert"
+                     style="padding: 0.8em; margin-bottom: 1em; border-radius: 4px; text-align:center;
+                            background-color: {% if category == 'success' %}#e6ffed{% elif category == 'error' %}#f8d7da{% else %}#e2e3e5{% endif %};
+                            border: 1px solid {% if category == 'success' %}#c3e6cb{% elif category == 'error' %}#f5c6cb{% else %}#d6d8db{% endif %};
+                            color: {% if category == 'success' %}#155724{% elif category == 'error' %}#721c24{% else %}#383d41{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="form-container mb-2">
+        <h2>Добавить расход</h2>
+        <form method="POST" action="{{ url_for('index') }}">
+            <div>
+                <label for="add-date">Дата:</label>
+                <input type="date" id="add-date" name="date" required>
+            </div>
+            <div>
+                <label for="add-amount">Сумма:</label>
+                <input type="number" id="add-amount" name="amount" step="0.01" required>
+            </div>
+            <div>
+                <label for="add-category_id">Категория:</label>
+                <select id="add-category_id" name="category_id">
+                    <option value="0">Без категории</option>
+                    {% for category in categories_for_dropdown %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="button-general">Добавить расход</button>
+        </form>
+    </div>
+
+
+    {% if expenses %}
+    <div class="table-container">
+        <h2>История затрат</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Сумма</th>
+                    <th>Категория</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody id="expense-table-body">
+                {% for expense in expenses %}
+                <tr id="expense-row-{{ expense.id }}" class="{{ 'positive' if expense.amount >= 0 else 'negative' }}">
+                    <td>{{ expense.date }}</td>
+                    <td>{{ "%.2f"|format(expense.amount) }}</td>
+                    <td>{{ expense.category_name or 'Без категории' }}</td>
+                    <td>
+                        <button class="action-button edit-button" 
+                                onclick="editExpense('{{ expense.id }}', '{{ expense.date }}', '{{ expense.amount }}', '{{ expense.category_id if expense.category_id is not none else 0 }}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center mt-2">Затрат пока нет. Добавьте первую!</p>
+    {% endif %}
+
+    <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content form-container">
+            <span class="close-button" onclick="closeEditModal()">&times;</span>
+            <h2>Редактировать затрату</h2>
+            <form id="editExpenseForm" method="POST"> <input type="hidden" name="id" id="edit-id">
+                <div>
+                    <label for="edit-date">Дата:</label>
+                    <input type="date" id="edit-date" name="date" required>
+                </div>
+                <div>
+                    <label for="edit-amount">Сумма:</label>
+                    <input type="number" id="edit-amount" name="amount" step="0.01" required>
+                </div>
+                <div>
+                    <label for="edit-category_id">Категория:</label>
+                    <select id="edit-category_id" name="category_id">
+                        <option value="0">Без категории</option>
+                        {% for category in categories_for_dropdown %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="button-general">Сохранить изменения</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+    .modal-content { margin: 10% auto; position: relative; } /* form-container уже стилизует */
+    .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; right: 20px; top: 10px; }
+    .close-button:hover, .close-button:focus { color: black; text-decoration: none; }
+    .positive { background-color: #e6ffed !important; } /* !important для переопределения hover */
+    .negative { background-color: #ffebee !important; }
+    .action-button { background: none; border: none; cursor: pointer; padding: 5px; color: #007bff; }
+    .action-button:hover { color: #0056b3; }
+    .action-button .bi-pencil { font-size: 1.1em; }
+    .alert { /* Стили для flash-сообщений, дублируют немного то, что в цикле, но можно вынести в CSS */
+        padding: 0.8em; margin-bottom: 1em; border-radius: 4px; text-align:center;
+    }
+    .alert-success { background-color: #e6ffed; border: 1px solid #c3e6cb; color: #155724; }
+    .alert-error   { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    .alert-info    { background-color: #e2e3e5; border: 1px solid #d6d8db; color: #383d41; }
+
+</style>
+<script>
+    function editExpense(id, date, amount, categoryId) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editExpenseForm');
+        
+        form.action = `/edit_expense/${id}`; // Устанавливаем action для формы
+        document.getElementById('edit-id').value = id; // Это поле не обязательно, если id в action
+        document.getElementById('edit-date').value = date;
+        document.getElementById('edit-amount').value = parseFloat(amount).toFixed(2);
+        document.getElementById('edit-category_id').value = categoryId === null || categoryId === undefined || categoryId === 'None' ? '0' : categoryId;
+        
+        modal.style.display = 'block';
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            closeEditModal();
+        }
+    }
+    // Удаляем старую функцию addExpense, т.к. теперь это обычная отправка формы
+    // Удаляем saveModalExpense, т.к. теперь это обычная отправка формы с action
+</script>
+{% endblock %}
